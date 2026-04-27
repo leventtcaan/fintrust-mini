@@ -15,3 +15,8 @@ Content-Type: application/json
 }
 
 ###
+
+GET {{FinTrustMini.Api_HostAddress}}/api/accounts/11111111-1111-1111-1111-111111111111
+Accept: application/json
+
+###
