@@ -1,5 +1,6 @@
 using FinTrustMini.Application.Abstractions;
 using FinTrustMini.Application.Transfers.CreateTransfer;
+using FinTrustMini.Application.Transfers.Risk;
 using FinTrustMini.Domain.Accounts;
 using FinTrustMini.Domain.Transfers;
 
@@ -14,7 +15,7 @@ public sealed class CreateTransferServiceTests
         var toAccount = CreateAccount(openingBalance: 100m);
         var accountRepository = new FakeAccountRepository(fromAccount, toAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = new CreateTransferService(accountRepository, transferRepository);
+        var service = CreateService(accountRepository, transferRepository);
         var request = new CreateTransferRequest(fromAccount.Id, toAccount.Id, 150m, "Invoice payment");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -36,7 +37,7 @@ public sealed class CreateTransferServiceTests
         var toAccount = CreateAccount(openingBalance: 100m);
         var accountRepository = new FakeAccountRepository(fromAccount, toAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = new CreateTransferService(accountRepository, transferRepository);
+        var service = CreateService(accountRepository, transferRepository);
         var request = new CreateTransferRequest(fromAccount.Id, toAccount.Id, 150m, "Invoice payment");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -57,7 +58,7 @@ public sealed class CreateTransferServiceTests
         var fromAccount = CreateAccount(openingBalance: 500m);
         var accountRepository = new FakeAccountRepository(fromAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = new CreateTransferService(accountRepository, transferRepository);
+        var service = CreateService(accountRepository, transferRepository);
         var request = new CreateTransferRequest(fromAccount.Id, Guid.NewGuid(), 150m, "Invoice payment");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -68,6 +69,37 @@ public sealed class CreateTransferServiceTests
 
         Assert.NotNull(transferRepository.SavedTransfer);
         Assert.Equal(TransferStatus.Failed, transferRepository.SavedTransfer.Status);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldFailTransfer_WhenAmountExceedsRiskLimit()
+    {
+        var fromAccount = CreateAccount(openingBalance: 20_000m);
+        var toAccount = CreateAccount(openingBalance: 100m);
+        var accountRepository = new FakeAccountRepository(fromAccount, toAccount);
+        var transferRepository = new FakeTransferRepository();
+        var service = CreateService(accountRepository, transferRepository);
+        var request = new CreateTransferRequest(fromAccount.Id, toAccount.Id, 10_001m, "High value transfer");
+
+        var result = await service.CreateAsync(request, CancellationToken.None);
+
+        Assert.Equal("Failed", result.Status);
+        Assert.Equal("Transfer amount exceeds the single transfer limit of 10000.", result.FailureReason);
+        Assert.Equal(20_000m, fromAccount.Balance);
+        Assert.Equal(100m, toAccount.Balance);
+
+        Assert.NotNull(transferRepository.SavedTransfer);
+        Assert.Equal(TransferStatus.Failed, transferRepository.SavedTransfer.Status);
+    }
+
+    private static CreateTransferService CreateService(
+        IAccountRepository accountRepository,
+        ITransferRepository transferRepository)
+    {
+        return new CreateTransferService(
+            accountRepository,
+            transferRepository,
+            new DefaultTransferRiskPolicy());
     }
 
     private static Account CreateAccount(decimal openingBalance)

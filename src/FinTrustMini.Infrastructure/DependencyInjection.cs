@@ -1,4 +1,5 @@
 using FinTrustMini.Application.Abstractions;
+using FinTrustMini.Application.Transfers.Risk;
 using FinTrustMini.Infrastructure.Accounts;
 using FinTrustMini.Infrastructure.Transfers;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
         services.AddSingleton<ITransferRepository, InMemoryTransferRepository>();
+        services.AddSingleton<ITransferRiskPolicy, DefaultTransferRiskPolicy>();
 
         return services;
     }

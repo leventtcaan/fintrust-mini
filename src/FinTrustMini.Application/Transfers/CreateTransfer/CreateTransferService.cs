@@ -7,11 +7,16 @@ public sealed class CreateTransferService
 {
     private readonly IAccountRepository _accountRepository;
     private readonly ITransferRepository _transferRepository;
+    private readonly ITransferRiskPolicy _transferRiskPolicy;
 
-    public CreateTransferService(IAccountRepository accountRepository, ITransferRepository transferRepository)
+    public CreateTransferService(
+        IAccountRepository accountRepository,
+        ITransferRepository transferRepository,
+        ITransferRiskPolicy transferRiskPolicy)
     {
         _accountRepository = accountRepository;
         _transferRepository = transferRepository;
+        _transferRiskPolicy = transferRiskPolicy;
     }
 
     public async Task<CreateTransferResult> CreateAsync(CreateTransferRequest request, CancellationToken cancellationToken)
@@ -36,6 +41,13 @@ public sealed class CreateTransferService
             if (toAccount is null)
             {
                 throw new InvalidOperationException("Destination account was not found.");
+            }
+
+            var riskResult = _transferRiskPolicy.Evaluate(request.Amount);
+
+            if (!riskResult.IsAllowed)
+            {
+                throw new InvalidOperationException(riskResult.Reason);
             }
 
             fromAccount.Debit(request.Amount);
