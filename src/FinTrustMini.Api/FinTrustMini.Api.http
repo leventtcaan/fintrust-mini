@@ -4,3 +4,14 @@ GET {{FinTrustMini.Api_HostAddress}}/api/health
 Accept: application/json
 
 ###
+
+POST {{FinTrustMini.Api_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "customerId": "11111111-1111-1111-1111-111111111111",
+  "iban": "TR000000000000000000000001",
+  "openingBalance": 250
+}
+
+###

@@ -1,8 +1,13 @@
+using FinTrustMini.Application.Accounts.CreateAccount;
+using FinTrustMini.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<CreateAccountService>();
+builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 
