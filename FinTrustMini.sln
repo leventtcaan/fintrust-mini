@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E9D1EB31
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinTrustMini.Domain.Tests", "tests\FinTrustMini.Domain.Tests\FinTrustMini.Domain.Tests.csproj", "{AF8E81B1-43F8-405D-9141-A371ACFED3FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinTrustMini.Application.Tests", "tests\FinTrustMini.Application.Tests\FinTrustMini.Application.Tests.csproj", "{F6D7C23A-6C72-484B-889D-CF2ABD00ED51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{AF8E81B1-43F8-405D-9141-A371ACFED3FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF8E81B1-43F8-405D-9141-A371ACFED3FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF8E81B1-43F8-405D-9141-A371ACFED3FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6D7C23A-6C72-484B-889D-CF2ABD00ED51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6D7C23A-6C72-484B-889D-CF2ABD00ED51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6D7C23A-6C72-484B-889D-CF2ABD00ED51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6D7C23A-6C72-484B-889D-CF2ABD00ED51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EB880B87-0103-4D8E-9505-73555A463C29} = {056823BC-EF62-413B-A1DD-4D5F0A8FA91C}
@@ -53,5 +59,6 @@ Global
 		{814A4435-9A9E-4ACA-B031-6E5C02C89A80} = {056823BC-EF62-413B-A1DD-4D5F0A8FA91C}
 		{826630F0-0256-43B5-BF20-74EE14E49186} = {056823BC-EF62-413B-A1DD-4D5F0A8FA91C}
 		{AF8E81B1-43F8-405D-9141-A371ACFED3FC} = {E9D1EB31-3BC6-4FEE-81B9-0073D13E7DC0}
+		{F6D7C23A-6C72-484B-889D-CF2ABD00ED51} = {E9D1EB31-3BC6-4FEE-81B9-0073D13E7DC0}
 	EndGlobalSection
 EndGlobal
