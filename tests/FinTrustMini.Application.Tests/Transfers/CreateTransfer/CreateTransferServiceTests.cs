@@ -1,6 +1,7 @@
 using FinTrustMini.Application.Abstractions;
 using FinTrustMini.Application.Transfers.CreateTransfer;
 using FinTrustMini.Application.Transfers.Risk;
+using FinTrustMini.Domain.Audit;
 using FinTrustMini.Domain.Accounts;
 using FinTrustMini.Domain.Transfers;
 
@@ -15,7 +16,8 @@ public sealed class CreateTransferServiceTests
         var toAccount = CreateAccount(openingBalance: 100m);
         var accountRepository = new FakeAccountRepository(fromAccount, toAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = CreateService(accountRepository, transferRepository);
+        var auditLogRepository = new FakeAuditLogRepository();
+        var service = CreateService(accountRepository, transferRepository, auditLogRepository);
         var request = new CreateTransferRequest(fromAccount.Id, toAccount.Id, 150m, "Invoice payment");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -28,6 +30,11 @@ public sealed class CreateTransferServiceTests
         Assert.NotNull(transferRepository.SavedTransfer);
         Assert.Equal(TransferStatus.Completed, transferRepository.SavedTransfer.Status);
         Assert.Equal(result.TransferId, transferRepository.SavedTransfer.Id);
+
+        Assert.NotNull(auditLogRepository.SavedAuditLog);
+        Assert.Equal("TransferCreated", auditLogRepository.SavedAuditLog.Action);
+        Assert.Equal(nameof(Transfer), auditLogRepository.SavedAuditLog.EntityName);
+        Assert.Equal(result.TransferId, auditLogRepository.SavedAuditLog.EntityId);
     }
 
     [Fact]
@@ -37,7 +44,8 @@ public sealed class CreateTransferServiceTests
         var toAccount = CreateAccount(openingBalance: 100m);
         var accountRepository = new FakeAccountRepository(fromAccount, toAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = CreateService(accountRepository, transferRepository);
+        var auditLogRepository = new FakeAuditLogRepository();
+        var service = CreateService(accountRepository, transferRepository, auditLogRepository);
         var request = new CreateTransferRequest(fromAccount.Id, toAccount.Id, 150m, "Invoice payment");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -50,6 +58,7 @@ public sealed class CreateTransferServiceTests
         Assert.NotNull(transferRepository.SavedTransfer);
         Assert.Equal(TransferStatus.Failed, transferRepository.SavedTransfer.Status);
         Assert.Equal("Insufficient balance.", transferRepository.SavedTransfer.FailureReason);
+        Assert.NotNull(auditLogRepository.SavedAuditLog);
     }
 
     [Fact]
@@ -58,7 +67,7 @@ public sealed class CreateTransferServiceTests
         var fromAccount = CreateAccount(openingBalance: 500m);
         var accountRepository = new FakeAccountRepository(fromAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = CreateService(accountRepository, transferRepository);
+        var service = CreateService(accountRepository, transferRepository, new FakeAuditLogRepository());
         var request = new CreateTransferRequest(fromAccount.Id, Guid.NewGuid(), 150m, "Invoice payment");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -78,7 +87,7 @@ public sealed class CreateTransferServiceTests
         var toAccount = CreateAccount(openingBalance: 100m);
         var accountRepository = new FakeAccountRepository(fromAccount, toAccount);
         var transferRepository = new FakeTransferRepository();
-        var service = CreateService(accountRepository, transferRepository);
+        var service = CreateService(accountRepository, transferRepository, new FakeAuditLogRepository());
         var request = new CreateTransferRequest(fromAccount.Id, toAccount.Id, 10_001m, "High value transfer");
 
         var result = await service.CreateAsync(request, CancellationToken.None);
@@ -94,12 +103,14 @@ public sealed class CreateTransferServiceTests
 
     private static CreateTransferService CreateService(
         IAccountRepository accountRepository,
-        ITransferRepository transferRepository)
+        ITransferRepository transferRepository,
+        IAuditLogRepository auditLogRepository)
     {
         return new CreateTransferService(
             accountRepository,
             transferRepository,
-            new DefaultTransferRiskPolicy());
+            new DefaultTransferRiskPolicy(),
+            auditLogRepository);
     }
 
     private static Account CreateAccount(decimal openingBalance)
@@ -149,6 +160,18 @@ public sealed class CreateTransferServiceTests
         public Task<Transfer?> GetByIdAsync(Guid transferId, CancellationToken cancellationToken)
         {
             return Task.FromResult<Transfer?>(SavedTransfer?.Id == transferId ? SavedTransfer : null);
+        }
+    }
+
+    private sealed class FakeAuditLogRepository : IAuditLogRepository
+    {
+        public AuditLog? SavedAuditLog { get; private set; }
+
+        public Task AddAsync(AuditLog auditLog, CancellationToken cancellationToken)
+        {
+            SavedAuditLog = auditLog;
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,5 +1,6 @@
 using FinTrustMini.Application.Abstractions;
 using FinTrustMini.Application.Accounts.CreateAccount;
+using FinTrustMini.Domain.Audit;
 using FinTrustMini.Domain.Accounts;
 
 namespace FinTrustMini.Application.Tests.Accounts.CreateAccount;
@@ -10,7 +11,8 @@ public sealed class CreateAccountServiceTests
     public async Task CreateAsync_ShouldCreateAccountAndSaveIt_WhenRequestIsValid()
     {
         var repository = new FakeAccountRepository();
-        var service = new CreateAccountService(repository);
+        var auditLogRepository = new FakeAuditLogRepository();
+        var service = new CreateAccountService(repository, auditLogRepository);
         var request = new CreateAccountRequest(
             Guid.NewGuid(),
             "TR000000000000000000000001",
@@ -29,13 +31,19 @@ public sealed class CreateAccountServiceTests
         Assert.Equal(request.Iban, repository.SavedAccount.Iban);
         Assert.Equal(request.OpeningBalance, repository.SavedAccount.Balance);
         Assert.Equal(AccountStatus.Active, repository.SavedAccount.Status);
+
+        Assert.NotNull(auditLogRepository.SavedAuditLog);
+        Assert.Equal("AccountCreated", auditLogRepository.SavedAuditLog.Action);
+        Assert.Equal(nameof(Account), auditLogRepository.SavedAuditLog.EntityName);
+        Assert.Equal(result.AccountId, auditLogRepository.SavedAuditLog.EntityId);
     }
 
     [Fact]
     public async Task CreateAsync_ShouldPassCancellationTokenToRepository()
     {
         var repository = new FakeAccountRepository();
-        var service = new CreateAccountService(repository);
+        var auditLogRepository = new FakeAuditLogRepository();
+        var service = new CreateAccountService(repository, auditLogRepository);
         var request = new CreateAccountRequest(
             Guid.NewGuid(),
             "TR000000000000000000000001",
@@ -64,6 +72,18 @@ public sealed class CreateAccountServiceTests
         public Task<Account?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken)
         {
             return Task.FromResult<Account?>(SavedAccount?.Id == accountId ? SavedAccount : null);
+        }
+    }
+
+    private sealed class FakeAuditLogRepository : IAuditLogRepository
+    {
+        public AuditLog? SavedAuditLog { get; private set; }
+
+        public Task AddAsync(AuditLog auditLog, CancellationToken cancellationToken)
+        {
+            SavedAuditLog = auditLog;
+
+            return Task.CompletedTask;
         }
     }
 }
