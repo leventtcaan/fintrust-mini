@@ -60,5 +60,10 @@ public sealed class CreateAccountServiceTests
 
             return Task.CompletedTask;
         }
+
+        public Task<Account?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<Account?>(SavedAccount?.Id == accountId ? SavedAccount : null);
+        }
     }
 }
