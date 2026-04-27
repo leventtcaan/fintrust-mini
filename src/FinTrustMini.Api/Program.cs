@@ -1,5 +1,6 @@
 using FinTrustMini.Application.Accounts.CreateAccount;
 using FinTrustMini.Application.Accounts.GetAccount;
+using FinTrustMini.Application.Transfers.CreateTransfer;
 using FinTrustMini.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<CreateAccountService>();
 builder.Services.AddScoped<GetAccountService>();
+builder.Services.AddScoped<CreateTransferService>();
 builder.Services.AddInfrastructure();
 
 var app = builder.Build();
