@@ -1,3 +1,4 @@
+using FinTrustMini.Api.Middleware;
 using FinTrustMini.Application.Accounts.CreateAccount;
 using FinTrustMini.Application.Accounts.GetAccount;
 using FinTrustMini.Application.Transfers.CreateTransfer;
@@ -16,6 +17,8 @@ builder.Services.AddInfrastructure();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
