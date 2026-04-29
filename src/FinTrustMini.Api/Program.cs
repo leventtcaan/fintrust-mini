@@ -33,9 +33,15 @@ builder.Services
 builder.Services.AddScoped<CreateAccountService>();
 builder.Services.AddScoped<GetAccountService>();
 builder.Services.AddScoped<CreateTransferService>();
-builder.Services.AddInfrastructure();
+
+var connectionString = builder.Configuration.GetConnectionString("FinTrustMiniDatabase")
+    ?? "Data Source=fintrust-mini.db";
+
+builder.Services.AddInfrastructure(connectionString);
 
 var app = builder.Build();
+
+await app.Services.EnsureDatabaseCreatedAsync();
 
 // Configure the HTTP request pipeline.
 

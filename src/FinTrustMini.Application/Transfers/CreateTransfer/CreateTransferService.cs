@@ -57,6 +57,9 @@ public sealed class CreateTransferService
             fromAccount.Debit(request.Amount);
             toAccount.Credit(request.Amount);
 
+            await _accountRepository.UpdateAsync(fromAccount, cancellationToken);
+            await _accountRepository.UpdateAsync(toAccount, cancellationToken);
+
             transfer.MarkCompleted();
         }
         catch (Exception exception)

@@ -57,6 +57,11 @@ public sealed class GetAccountServiceTests
             throw new NotSupportedException("This fake is only used for account lookup tests.");
         }
 
+        public Task UpdateAsync(Account account, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException("This fake is only used for account lookup tests.");
+        }
+
         public Task<Account?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken)
         {
             var account = _account?.Id == accountId ? _account : null;

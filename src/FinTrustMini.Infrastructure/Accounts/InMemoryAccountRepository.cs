@@ -17,6 +17,15 @@ public sealed class InMemoryAccountRepository : IAccountRepository
         return Task.CompletedTask;
     }
 
+    public Task UpdateAsync(Account account, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        _accounts[account.Id] = account;
+
+        return Task.CompletedTask;
+    }
+
     public Task<Account?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

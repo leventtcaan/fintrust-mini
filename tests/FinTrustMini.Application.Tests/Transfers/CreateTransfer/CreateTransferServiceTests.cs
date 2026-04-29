@@ -26,6 +26,7 @@ public sealed class CreateTransferServiceTests
         Assert.Null(result.FailureReason);
         Assert.Equal(350m, fromAccount.Balance);
         Assert.Equal(250m, toAccount.Balance);
+        Assert.Equal(2, accountRepository.UpdatedAccounts.Count);
 
         Assert.NotNull(transferRepository.SavedTransfer);
         Assert.Equal(TransferStatus.Completed, transferRepository.SavedTransfer.Status);
@@ -134,6 +135,16 @@ public sealed class CreateTransferServiceTests
         public Task AddAsync(Account account, CancellationToken cancellationToken)
         {
             _accounts[account.Id] = account;
+
+            return Task.CompletedTask;
+        }
+
+        public List<Account> UpdatedAccounts { get; } = new();
+
+        public Task UpdateAsync(Account account, CancellationToken cancellationToken)
+        {
+            _accounts[account.Id] = account;
+            UpdatedAccounts.Add(account);
 
             return Task.CompletedTask;
         }
