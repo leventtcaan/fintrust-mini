@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IAccountRepository, EfAccountRepository>();
         services.AddScoped<ITransferRepository, EfTransferRepository>();
         services.AddScoped<IAuditLogRepository, EfAuditLogRepository>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddSingleton<ITransferRiskPolicy, DefaultTransferRiskPolicy>();
 
         return services;

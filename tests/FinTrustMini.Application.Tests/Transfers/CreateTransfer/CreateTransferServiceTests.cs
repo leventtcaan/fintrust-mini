@@ -36,6 +36,7 @@ public sealed class CreateTransferServiceTests
         Assert.Equal("TransferCreated", auditLogRepository.SavedAuditLog.Action);
         Assert.Equal(nameof(Transfer), auditLogRepository.SavedAuditLog.EntityName);
         Assert.Equal(result.TransferId, auditLogRepository.SavedAuditLog.EntityId);
+        Assert.Equal(1, service.UnitOfWork.TransactionCallCount);
     }
 
     [Fact]
@@ -102,16 +103,21 @@ public sealed class CreateTransferServiceTests
         Assert.Equal(TransferStatus.Failed, transferRepository.SavedTransfer.Status);
     }
 
-    private static CreateTransferService CreateService(
+    private static TestCreateTransferService CreateService(
         IAccountRepository accountRepository,
         ITransferRepository transferRepository,
         IAuditLogRepository auditLogRepository)
     {
-        return new CreateTransferService(
-            accountRepository,
-            transferRepository,
-            new DefaultTransferRiskPolicy(),
-            auditLogRepository);
+        var unitOfWork = new FakeUnitOfWork();
+
+        return new TestCreateTransferService(
+            unitOfWork,
+            new CreateTransferService(
+                accountRepository,
+                transferRepository,
+                new DefaultTransferRiskPolicy(),
+                auditLogRepository,
+                unitOfWork));
     }
 
     private static Account CreateAccount(decimal openingBalance)
@@ -183,6 +189,38 @@ public sealed class CreateTransferServiceTests
             SavedAuditLog = auditLog;
 
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeUnitOfWork : IUnitOfWork
+    {
+        public int TransactionCallCount { get; private set; }
+
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+            Func<CancellationToken, Task<TResult>> operation,
+            CancellationToken cancellationToken)
+        {
+            TransactionCallCount++;
+
+            return await operation(cancellationToken);
+        }
+    }
+
+    private sealed class TestCreateTransferService
+    {
+        private readonly CreateTransferService _service;
+
+        public TestCreateTransferService(FakeUnitOfWork unitOfWork, CreateTransferService service)
+        {
+            UnitOfWork = unitOfWork;
+            _service = service;
+        }
+
+        public FakeUnitOfWork UnitOfWork { get; }
+
+        public Task<CreateTransferResult> CreateAsync(CreateTransferRequest request, CancellationToken cancellationToken)
+        {
+            return _service.CreateAsync(request, cancellationToken);
         }
     }
 }
