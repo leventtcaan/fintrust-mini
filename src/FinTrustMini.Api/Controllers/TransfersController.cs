@@ -1,5 +1,6 @@
 using FinTrustMini.Api.Contracts.Transfers;
 using FinTrustMini.Application.Transfers.CreateTransfer;
+using FinTrustMini.Application.Transfers.GetTransfer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinTrustMini.Api.Controllers;
@@ -9,10 +10,12 @@ namespace FinTrustMini.Api.Controllers;
 public sealed class TransfersController : ControllerBase
 {
     private readonly CreateTransferService _createTransferService;
+    private readonly GetTransferService _getTransferService;
 
-    public TransfersController(CreateTransferService createTransferService)
+    public TransfersController(CreateTransferService createTransferService, GetTransferService getTransferService)
     {
         _createTransferService = createTransferService;
+        _getTransferService = getTransferService;
     }
 
     [HttpPost]
@@ -35,5 +38,30 @@ public sealed class TransfersController : ControllerBase
             result.FailureReason);
 
         return Created($"/api/transfers/{response.TransferId}", response);
+    }
+
+    [HttpGet("{transferId:guid}")]
+    public async Task<IActionResult> GetById(Guid transferId, CancellationToken cancellationToken)
+    {
+        var result = await _getTransferService.GetByIdAsync(transferId, cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        var response = new GetTransferApiResponse(
+            result.TransferId,
+            result.FromAccountId,
+            result.ToAccountId,
+            result.Amount,
+            result.Description,
+            result.Status,
+            result.FailureReason,
+            result.CreatedAtUtc,
+            result.CompletedAtUtc,
+            result.FailedAtUtc);
+
+        return Ok(response);
     }
 }
