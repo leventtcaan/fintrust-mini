@@ -1,6 +1,7 @@
 using FinTrustMini.Api.Middleware;
 using FinTrustMini.Application.Accounts.CreateAccount;
 using FinTrustMini.Application.Accounts.GetAccount;
+using FinTrustMini.Application.Transfers.AssessTransferRisk;
 using FinTrustMini.Application.Transfers.CreateTransfer;
 using FinTrustMini.Application.Transfers.GetTransfer;
 using FinTrustMini.Infrastructure;
@@ -33,6 +34,7 @@ builder.Services
     });
 builder.Services.AddScoped<CreateAccountService>();
 builder.Services.AddScoped<GetAccountService>();
+builder.Services.AddScoped<AssessTransferRiskService>();
 builder.Services.AddScoped<CreateTransferService>();
 builder.Services.AddScoped<GetTransferService>();
 

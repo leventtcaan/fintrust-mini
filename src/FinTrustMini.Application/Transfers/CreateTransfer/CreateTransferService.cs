@@ -52,7 +52,11 @@ public sealed class CreateTransferService
                     throw new InvalidOperationException("Destination account was not found.");
                 }
 
-                var riskResult = _transferRiskPolicy.Evaluate(request.Amount);
+                var riskResult = _transferRiskPolicy.Evaluate(
+                    request.FromAccountId,
+                    request.ToAccountId,
+                    request.Amount,
+                    request.Description);
 
                 if (!riskResult.IsAllowed)
                 {
