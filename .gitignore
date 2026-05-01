@@ -492,3 +492,4 @@ $RECYCLE.BIN/
 # Final public documentation can be added deliberately later by removing or
 # overriding this rule.
 *.md
+!README.md
